@@ -5,6 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>CG-TP01</name>
             <source-roots>
+                <root id="src.dll.dir" name="dll"/>
                 <root id="src.dir"/>
             </source-roots>
             <test-roots>
