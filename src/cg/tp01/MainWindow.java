@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.util.Stack;
+import sun.awt.Mutex;
 
 /**
  *
@@ -136,25 +137,25 @@ public class MainWindow extends javax.swing.JFrame {
         return (int) Math.ceil(Math.sqrt(Math.pow(y2-y1, 2) + Math.pow(x2-x1, 2)));
     }
     
-    private void boundaryFill(int initialX, int initialY) {
+    private void boundaryFill(int x, int y) {
         Stack<Point> points = new Stack<>();
-        points.add(new Point(initialX+1, initialY));
-        Color myColor = getColor(initialX, initialY);
+        points.add(new Point(x+1, y));
         
+        Color innerColor = getPixelColor(x, y);
+
         while(!points.isEmpty()) {
             Point currentPoint = points.pop();
-            int x = currentPoint.x;
-            int y = currentPoint.y;
-            System.out.println(" >>> x=" + x + " | y=" + y);
-            Color current = getColor(x, y);
-            setPixel(x, y);
-            if(!myColor.equals(current)) {
-                setPixel(x, y);
-                System.out.println(" >>> ");
-                points.push(new Point(x+1, y));
-                points.push(new Point(x-1, y));
-                points.push(new Point(x, y+1));
-                points.push(new Point(x, y-1));
+            int ix = currentPoint.x;
+            int iy = currentPoint.y;
+           
+            Color currentColor = getPixelColor(ix, iy);
+            
+            if(currentColor.equals(innerColor)) {
+                setPixel(ix, iy);
+                points.push(new Point(ix+1, iy));
+                points.push(new Point(ix-1, iy));
+                points.push(new Point(ix, iy+1));
+                points.push(new Point(ix, iy-1));
             }
         }
     }
@@ -179,6 +180,8 @@ public class MainWindow extends javax.swing.JFrame {
                 bresenham(getP1X(), getP1Y(), getP2X(), getP2Y());
             } else if (circBres) {
                 circunferencia(getP1X(), getP1Y(), getRadius());
+            } else if (bFill) {
+                boundaryFill(getP2X(), getP2Y());
             }
         }
     }
@@ -188,13 +191,21 @@ public class MainWindow extends javax.swing.JFrame {
         radiusInput.setText(String.valueOf(d));
         return d;
     }
-    
+ 
     private void setPixel(int x, int y) {
         myJPanel1.setPixel(x, y);
     }
     
-    private Color getColor(int x, int y) {
+    private void setPixel(int x, int y, Color color) {
+        myJPanel1.setPixel(x, y, color);
+    }
+    
+    private Color getPixelColor(int x, int y) {
         return myJPanel1.getPixelColor(x, y);
+    }
+    
+    private Color getSelectedColor() {
+        return MyJPanel.getColor();
     }
     
     private int getP1X() {
@@ -521,7 +532,6 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_myJPanel1MouseMoved
 
     private void myJPanel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_myJPanel1MouseClicked
-        myJPanel1.setPixel(evt.getX(), evt.getY());
         setPoint(evt.getX(), evt.getY());
     }//GEN-LAST:event_myJPanel1MouseClicked
 

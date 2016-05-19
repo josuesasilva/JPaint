@@ -34,21 +34,22 @@ public class MyJPanel extends javax.swing.JPanel {
         });
     }
     
-    public void setPixel(int x, int y) {
-        pixels.add(new Pixel(x, y, MyJPanel.color));
+    public void setPixel(int x, int y, Color color) {
+        pixels.add(new Pixel(x, y, color));
         repaint();
+    }
+    
+    public void setPixel(int x, int y) {
+        setPixel(x, y, MyJPanel.color);
     }
     
     public Color getPixelColor(int x, int y) {
         for (Pixel pixel : pixels) {
             if (pixel.x == x && pixel.y == y) {
-                System.out.println(color.toString());
                 return pixel.color;
             }
         }
-        Color c = new Color(0);
-        System.out.println(c.toString());
-        return c;
+        return Color.WHITE;
     }
     
     public void clear() {
@@ -64,6 +65,10 @@ public class MyJPanel extends javax.swing.JPanel {
     
     public static void setColor(Color color) {
         MyJPanel.color = color;
+    }
+    
+    public static Color getColor() {
+        return color;
     }
     
     /**
