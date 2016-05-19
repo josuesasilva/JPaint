@@ -1,5 +1,6 @@
 package cg.tp01;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.util.Stack;
@@ -137,25 +138,24 @@ public class MainWindow extends javax.swing.JFrame {
     
     private void boundaryFill(int initialX, int initialY) {
         Stack<Point> points = new Stack<>();
-        points.add(new Point(initialX, initialY));
-
+        points.add(new Point(initialX+1, initialY));
+        Color myColor = getColor(initialX, initialY);
+        
         while(!points.isEmpty()) {
             Point currentPoint = points.pop();
             int x = currentPoint.x;
             int y = currentPoint.y;
-
-//            int current = bI.getRGB(x, y);
-//            if((current != bColor.getRGB()) && (current != fColor.getRGB())){
-//                //bI.setRGB(x, y, fColor.getRGB());
-//                bI.setRGB(x, y, fColor.getRGB());
-//
-//                repaint();
-//
-//                points.push(new Point(x+1, y));
-//                points.push(new Point(x-1, y));
-//                points.push(new Point(x, y+1));
-//                points.push(new Point(x, y-1));
-//            }
+            System.out.println(" >>> x=" + x + " | y=" + y);
+            Color current = getColor(x, y);
+            setPixel(x, y);
+            if(!myColor.equals(current)) {
+                setPixel(x, y);
+                System.out.println(" >>> ");
+                points.push(new Point(x+1, y));
+                points.push(new Point(x-1, y));
+                points.push(new Point(x, y+1));
+                points.push(new Point(x, y-1));
+            }
         }
     }
     
@@ -164,6 +164,10 @@ public class MainWindow extends javax.swing.JFrame {
             pointFlag = false;
             p1X.setText(String.valueOf(x));
             p1Y.setText(String.valueOf(y));
+            
+            if (bFill) {
+                boundaryFill(getP1X(), getP1Y());
+            }
         } else {
             pointFlag = true;
             p2X.setText(String.valueOf(x));
@@ -175,8 +179,6 @@ public class MainWindow extends javax.swing.JFrame {
                 bresenham(getP1X(), getP1Y(), getP2X(), getP2Y());
             } else if (circBres) {
                 circunferencia(getP1X(), getP1Y(), getRadius());
-            } else if (bFill) {
-                
             }
         }
     }
@@ -189,6 +191,10 @@ public class MainWindow extends javax.swing.JFrame {
     
     private void setPixel(int x, int y) {
         myJPanel1.setPixel(x, y);
+    }
+    
+    private Color getColor(int x, int y) {
+        return myJPanel1.getPixelColor(x, y);
     }
     
     private int getP1X() {
@@ -599,10 +605,10 @@ public class MainWindow extends javax.swing.JFrame {
     private void radioButtonFillItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_radioButtonFillItemStateChanged
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             bFill = true;
-            System.out.println("Bresenham radio button selected");
+            System.out.println("Fill radio button selected");
         } else {
             bFill = false;
-            System.out.println("Bresenham radio button deselected");
+            System.out.println("Fill radio button deselected");
         }
     }//GEN-LAST:event_radioButtonFillItemStateChanged
 

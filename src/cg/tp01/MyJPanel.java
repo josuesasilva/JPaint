@@ -39,6 +39,18 @@ public class MyJPanel extends javax.swing.JPanel {
         repaint();
     }
     
+    public Color getPixelColor(int x, int y) {
+        for (Pixel pixel : pixels) {
+            if (pixel.x == x && pixel.y == y) {
+                System.out.println(color.toString());
+                return pixel.color;
+            }
+        }
+        Color c = new Color(0);
+        System.out.println(c.toString());
+        return c;
+    }
+    
     public void clear() {
         pixels.clear();
         repaint();
