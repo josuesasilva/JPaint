@@ -15,6 +15,12 @@ import com.sun.jna.ptr.IntByReference;
  */
 public class Emotiv {
     
+    private final Paint paint;
+    
+    public Emotiv(final Paint paint) {
+        this.paint = paint;
+    }
+    
     public static void test() {
         Pointer eEvent = Edk.INSTANCE.IEE_EmoEngineEventCreate();
 		Pointer eState = Edk.INSTANCE.IEE_EmoStateCreate();

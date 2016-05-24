@@ -1,10 +1,6 @@
 package cg.tp01;
 
-import java.awt.Color;
-import java.awt.Point;
 import java.awt.event.ItemEvent;
-import java.util.Stack;
-import sun.awt.Mutex;
 
 /**
  *
@@ -13,6 +9,9 @@ import sun.awt.Mutex;
 public class MainWindow extends javax.swing.JFrame {
 
     private boolean dda, bresenham, circBres, pointFlag, bFill;
+    private int cursorX, cursorY;
+    private final Paint paint;
+    
     /**
      * Creates new form MainWindow
      */
@@ -27,137 +26,19 @@ public class MainWindow extends javax.swing.JFrame {
         
         radiusInput.setVisible(false);
         radiusLabel.setVisible(false);
+        
+        cursorX = 0;
+        cursorY = 0;
+        
+        paint = new Paint(myJPanel1);
     }
     
-    private void dda(int x1, int y1, int x2, int y2) {        
-        int dx = x2 - x1, dy = y2 - y1;
-        float x = x1, y = y1;
-        float steps = (Math.abs(dx) > Math.abs(dy)) ? Math.abs(dx) : Math.abs(dy);
-        float xIncr = dx/steps;
-        float yIncr = dy/steps;
-        setPixel(x1, y1);
-        
-        for (int i = 0; i < steps; i++) {
-            x = x + xIncr;
-            y = y + yIncr;
-            setPixel(Math.round(x), Math.round(y));
-        }
+    public int getCurrentCursorCoordinateX() {
+        return cursorX;
     }
     
-    private void bresenham(int x1, int y1, int x2, int y2) {
-        int incrX, incrY;
-        
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        
-        if (dx >= 0) {
-            incrX = 1;
-        } else {
-            incrX = -1;
-            dx = -dx;
-        }
-        
-        if (dy >= 0) {
-            incrY = 1;
-        } else {
-            incrY = -1;
-            dy = -dy;
-        }
-        
-        int x = x1; 
-        int y = y1;
-        
-        setPixel (x,y);
-
-        if (dy < dx) {
-            int p = 2 * dy - dx;
-            int const1 = 2 * dy;
-            int const2 = 2 * (dy - dx);
-            
-            for (int i = 0; i < dx; i++) {
-                x += incrX;
-                if (p < 0) {
-                    p += const1;
-                } else {
-                    y += incrY;
-                    p += const2;
-                }
-                setPixel(x, y);
-            }
-            
-        } else { 
-            int p = 2 * dx - dy;
-            int const1 = 2 * dx;
-            int const2 = 2 * (dx - dy);
-            
-            for (int i = 0; i < dy; i++) {
-                y += incrY;
-                if (p < 0) {
-                    p += const1;
-                } else {
-                    x += incrX;
-                    p += const2;
-                }
-                setPixel(x, y);
-            }
-            
-        }
-     
-    }
-    
-    private void circunferencia(int xc, int yc, int r) {
-        int x = 0, y = r, p = 3 - 2*r;
-        plotCircle(x, y, xc, yc);
-        
-        while(x < y) {
-            if (p < 0) {
-                p = p + 4*x + 6;
-            } else {
-                p = p + 4*(x - y) + 10;
-                y = y - 1;
-            }
-            
-            x = x + 1;
-            plotCircle(x, y, xc, yc);
-        }
-    }
-    
-    private void plotCircle(int x, int y, int xc, int yc) {
-        setPixel(xc+x, yc+y);
-        setPixel(xc-x, yc+y);
-        setPixel(xc+x, yc-y);
-        setPixel(xc-x, yc-y);
-        setPixel(xc+y, yc+x);
-        setPixel(xc-y, yc+x);
-        setPixel(xc+y, yc-x);
-        setPixel(xc-y, yc-x);
-    }
-    
-    private int distance(int x1, int y1, int x2, int y2) {
-        return (int) Math.ceil(Math.sqrt(Math.pow(y2-y1, 2) + Math.pow(x2-x1, 2)));
-    }
-    
-    private void boundaryFill(int x, int y) {
-        Stack<Point> points = new Stack<>();
-        points.add(new Point(x+1, y));
-        
-        Color innerColor = getPixelColor(x, y);
-
-        while(!points.isEmpty()) {
-            Point currentPoint = points.pop();
-            int ix = currentPoint.x;
-            int iy = currentPoint.y;
-           
-            Color currentColor = getPixelColor(ix, iy);
-            
-            if(currentColor.equals(innerColor)) {
-                setPixel(ix, iy);
-                points.push(new Point(ix+1, iy));
-                points.push(new Point(ix-1, iy));
-                points.push(new Point(ix, iy+1));
-                points.push(new Point(ix, iy-1));
-            }
-        }
+    public int getCurrentCursorCoordinateY() {
+        return cursorY;
     }
     
     private void setPoint(int x, int y) {
@@ -167,7 +48,7 @@ public class MainWindow extends javax.swing.JFrame {
             p1Y.setText(String.valueOf(y));
             
             if (bFill) {
-                boundaryFill(getP1X(), getP1Y());
+                paint.drawFill(getP1X(), getP1Y());
             }
         } else {
             pointFlag = true;
@@ -175,37 +56,15 @@ public class MainWindow extends javax.swing.JFrame {
             p2Y.setText(String.valueOf(y));
             
             if (dda) {
-                dda(getP1X(), getP1Y(), getP2X(), getP2Y());
+                paint.drawLine(getP1X(), getP1Y(), getP2X(), getP2Y());
             } else if (bresenham) {
-                bresenham(getP1X(), getP1Y(), getP2X(), getP2Y());
+                paint.drawBresenham(getP1X(), getP1Y(), getP2X(), getP2Y());
             } else if (circBres) {
-                circunferencia(getP1X(), getP1Y(), getRadius());
+                paint.drawCircle(getP1X(), getP1Y(), getRadius());
             } else if (bFill) {
-                boundaryFill(getP2X(), getP2Y());
+                paint.drawFill(getP2X(), getP2Y());
             }
         }
-    }
-    
-    private int getRadius() {
-        int d = distance(getP1X(), getP1Y(), getP2X(), getP2Y()); 
-        radiusInput.setText(String.valueOf(d));
-        return d;
-    }
- 
-    private void setPixel(int x, int y) {
-        myJPanel1.setPixel(x, y);
-    }
-    
-    private void setPixel(int x, int y, Color color) {
-        myJPanel1.setPixel(x, y, color);
-    }
-    
-    private Color getPixelColor(int x, int y) {
-        return myJPanel1.getPixelColor(x, y);
-    }
-    
-    private Color getSelectedColor() {
-        return MyJPanel.getColor();
     }
     
     private int getP1X() {
@@ -221,6 +80,57 @@ public class MainWindow extends javax.swing.JFrame {
     private int getP2Y() {
         return Integer.parseInt(p2Y.getText());
     }
+    
+    private int getRadius() {
+        int d = distance(getP1X(), getP1Y(), getP2X(), getP2Y()); 
+        radiusInput.setText(String.valueOf(d));
+        return d;
+    }
+    
+    private int distance(int x1, int y1, int x2, int y2) {
+        return (int) Math.ceil(Math.sqrt(Math.pow(y2-y1, 2) + Math.pow(x2-x1, 2)));
+    }
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        
+        /* Create and display the form */
+        MainWindow window = new MainWindow();
+        //Paint paintApi = new Paint(window.myJPanel1);
+        //Emotiv emotiv = new Emotiv(paintApi);
+        
+        java.awt.EventQueue.invokeLater(() -> {
+            window.setVisible(true);
+        });
+    }
+    
+    public static final int FIVE_SECONDS = 5000;
+    public static final int MAX_Y = 400;
+    public static final int MAX_X = 400;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -264,7 +174,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("JPaint");
-        setPreferredSize(new java.awt.Dimension(760, 500));
+        setPreferredSize(new java.awt.Dimension(800, 600));
         setResizable(false);
 
         jLabel1.setText("X:");
@@ -421,9 +331,6 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(524, 524, 524)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -464,12 +371,17 @@ public class MainWindow extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(myJPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(radioButtonDDA, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(radioButtonBres, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(radioButtonCirc, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(radioButtonFill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(radioButtonDDA, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(radioButtonBres, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(radioButtonCirc, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(radioButtonFill, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -527,6 +439,8 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void myJPanel1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_myJPanel1MouseMoved
+        cursorX = evt.getX();
+        cursorY = evt.getY();
         jTextField1.setText(String.valueOf(evt.getX()));
         jTextField2.setText(String.valueOf(evt.getY()));
     }//GEN-LAST:event_myJPanel1MouseMoved
@@ -621,43 +535,7 @@ public class MainWindow extends javax.swing.JFrame {
             System.out.println("Fill radio button deselected");
         }
     }//GEN-LAST:event_radioButtonFillItemStateChanged
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> {
-            new MainWindow().setVisible(true);
-        });
-    }
     
-    private static void exit() {
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jButton1;

@@ -67,7 +67,7 @@ public class MyJPanel extends javax.swing.JPanel {
         MyJPanel.color = color;
     }
     
-    public static Color getColor() {
+    public static Color getCurrentSelectedColor() {
         return color;
     }
     
