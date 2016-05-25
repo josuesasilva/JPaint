@@ -127,7 +127,6 @@ public class MainWindow extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(() -> {
             window.setVisible(true);
         });
-        
     }
    
 
