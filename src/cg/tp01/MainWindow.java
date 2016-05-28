@@ -1,5 +1,6 @@
 package cg.tp01;
 
+import com.sun.jna.Pointer;
 import java.awt.event.ItemEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -9,10 +10,14 @@ import java.util.logging.Logger;
  * @author Josué
  */
 public class MainWindow extends javax.swing.JFrame {
-
+    
+    static boolean smirkRight, smirkLeft, clench, winkRight, winkLeft, lookLeft, lookRight, raiseBrow;
+    
     private boolean dda, bresenham, circBres, pointFlag, bFill;
     private int cursorX, cursorY;
     private final Paint paint;
+    private boolean stateEmotivListener = false;
+    
     
     /**
      * Creates new form MainWindow
@@ -58,7 +63,7 @@ public class MainWindow extends javax.swing.JFrame {
             p2Y.setText(String.valueOf(y));
             
             if (dda) {
-                paint.drawLine(getP1X(), getP1Y(), getP2X(), getP2Y());
+                paint.drawLine(getP1X(), getP1Y(), getP2X(), getP2Y());                
             } else if (bresenham) {
                 paint.drawBresenham(getP1X(), getP1Y(), getP2X(), getP2Y());
             } else if (circBres) {
@@ -107,6 +112,79 @@ public class MainWindow extends javax.swing.JFrame {
     }
     
     /**
+     * Metodo para capturar comandos do sensor e traduzir em ações no programa
+     */
+    public void emotivListener(){
+        System.out.println("Initializing Emotiv Listener");
+        Thread thread = new Thread(){
+            @Override
+                public void run() {
+                    long timeSleep = 250; // Melhorar a sensibilidade
+                    while(true){
+                       
+                        
+                        
+                        // Smirk Right -> Clique do Mouse
+                        if(smirkRight){           
+                            setPoint(cursorX, cursorY); 
+                            timeSleep = 250;
+                        }
+                        
+                        // Clench -> Clique e Arraste do Mouse
+                        if(clench){
+                            setPoint(cursorX, cursorY); 
+                            timeSleep = 20;
+                        }
+                        
+                        // Smirk Left -> Abre a Paleta de Cores
+                        if(smirkLeft){
+                            jButton3.doClick();
+                            timeSleep = 250;
+                        }
+                        
+                        // Wink Left -> Seleciona Reta DDA
+                        if(winkLeft){
+                            radioButtonDDA.doClick();
+                            timeSleep = 250;
+                        }
+                        
+                        // Wink Right -> Seleciona Reta Bresenham
+                        if(winkRight){
+                            radioButtonBres.doClick();
+                            timeSleep = 250;
+                        }
+                        
+                        // Look Left -> Seleciona Circunferência
+                        if(lookLeft){
+                            radioButtonCirc.doClick();
+                            timeSleep = 250;
+                        }
+                        
+                        // Look Right -> Seleciona Preenchimento
+                        if(lookRight){
+                            radioButtonFill.doClick();
+                            timeSleep = 250;
+                        }
+                        
+                        // Raise Brow -> Limpa a tela
+                        if(raiseBrow){
+                            jButton1.doClick();
+                            timeSleep = 250;
+                        }
+                        
+                        try {
+                                Thread.sleep(timeSleep);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                    }
+                }
+        };
+        thread.start();
+    }   
+   
+    
+    /**
      * Main
      * @param args
      */
@@ -118,10 +196,23 @@ public class MainWindow extends javax.swing.JFrame {
         MainWindow window = new MainWindow();
         
         /* Create instance of paint creator */
-        //Paint paintApi = new Paint(window.myJPanel1);
+        Paint paintApi = new Paint(window.myJPanel1);
+        
+        /* Initialize the Listener */
+        window.emotivListener();
         
         /* Create instance of emotiv commands interpreter */
-        //Emotiv emotiv = new Emotiv(paintApi);
+                
+        Thread thread = new Thread(){
+          @Override
+                public void run() {
+                    //System.out.println("oi\n");
+                    Emotiv emotiv = new Emotiv(paintApi);
+                    emotiv.test();
+                }                 
+        };
+        thread.start();
+        //emotiv.test();
         
         /* Start UI */
         java.awt.EventQueue.invokeLater(() -> {
@@ -258,6 +349,16 @@ public class MainWindow extends javax.swing.JFrame {
         jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jButton1MouseClicked(evt);
+            }
+        });
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jButton1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jButton1KeyPressed(evt);
             }
         });
 
@@ -531,6 +632,16 @@ public class MainWindow extends javax.swing.JFrame {
             System.out.println("Fill radio button deselected");
         }
     }//GEN-LAST:event_radioButtonFillItemStateChanged
+
+    private void jButton1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jButton1KeyPressed
+        // TODO add your handling code here:
+        myJPanel1.clear();
+    }//GEN-LAST:event_jButton1KeyPressed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        myJPanel1.clear();
+    }//GEN-LAST:event_jButton1ActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
